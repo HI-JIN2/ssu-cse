@@ -14,6 +14,7 @@ int W[6][6]={
 };
 
 
+
 void dijkstra(){
     int i; //인덱스
     int vnear, e ;
