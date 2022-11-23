@@ -1,9 +1,9 @@
 #include <iostream>
-#include <map>
+#include<vector>
 using namespace std;
 #define INF 999
 #define n 5
-map<int, int> F;
+vector<pair<int,int>> F;
 int W[6][6] = {
     {0, 0, 0, 0, 0, 0},
     {0, 0, 7, 4, 6, 1},
@@ -14,27 +14,17 @@ int W[6][6] = {
 
 void dijkstra()
 {
-    int i; //인덱스
     int vnear;
-    int touch[n + 1]; //크기 5
+    int touch[n + 1]; 
     int length[n + 1];
     int min;
-    /*
-        for(int i=0;i<n+1;i++)
-            touch[i]=1;
-
-        for(int i=0;i<n+1;i++)
-            length[i]=W[1][i]; //1
-    */
 
     for (int i = 2; i <= n; i++)
     {
-        touch[i] = 1;        // start vertex
-        length[i] = W[1][i]; // length[2]=W[1][2]=7
-        // cout<<i<<length[i]<<" ";
+        touch[i] = 1;
+        length[i] = W[1][i];
     }
 
-    //length[0]=length[1]=1;
 
     for (int k = 1; k <= n - 1; k++) // repeat n-1번
     {
@@ -43,26 +33,19 @@ void dijkstra()
         {
             if (0 <= length[i] && length[i] <= min)
             {
-                min = length[i]; //
-                vnear = i;       // vear = i =2
+                min = length[i];
+                vnear = i;       
             }
         }
-        // e = 엣지 프롬 벌텍스 인덱스 바이 touch[vnear] to vertex index by vnear
-        // e를 F 배열에 넣기
 
         cout << "min=" << min << " vnear=" << vnear << endl;
-        F.insert({touch[vnear], vnear});
+        F.push_back({touch[vnear], vnear});
 
         for (int i = 2; i <= n; i++)
         {
             if (length[vnear] + W[vnear][i] < length[i])
             {
-                // 0 = -1 + 1
-                //  = length[5] 1 + W[5][2] inf length[2]
                 length[i] = length[vnear] + W[vnear][i]; //여기서 잘못 됨
-                //cout << length[i] << " = " << length[vnear] << " + " << W[vnear][i] << endl;
-                // length[4]=2, touch[4]=5
-
                 touch[i] = vnear;
                 cout << "length[" << i << "]=" << length[i] << " touch[" << i << "]=" << vnear << endl;
             }
@@ -80,11 +63,12 @@ void dijkstra()
             cout << length[i] << " ";
         }
         cout << endl;
+        cout<<"---------------------"<<endl;
     }
 
     cout << endl;
-
-    for (auto iter : F)
+    
+     for (auto iter : F)
     {
         cout << "(" << iter.first << ", " << iter.second << ") ";
     }
