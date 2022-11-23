@@ -4,3 +4,4 @@
 2. Chained Matrix Multiplication
 3. Optimal Binary Search Trees
 4. Dijkstra's Algorithm
+5. Kruskal's Algorithm
