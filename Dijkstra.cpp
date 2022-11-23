@@ -4,14 +4,20 @@ using namespace std;
 #define INF 999
 #define n 5
 vector<pair<int,int>> F;
-int W[6][6] = {
+/*int W[6][6] = {
     {0, 0, 0, 0, 0, 0},
     {0, 0, 7, 4, 6, 1},
     {0, INF, 0, INF, INF, INF},
     {0, INF, 2, 0, 5, INF},
     {0, INF, 3, INF, 0, INF},
+    {0, INF, INF, INF, 1, 0}};*/
+int W[6][6] = {
+    {0, 0, 0, 0, 0, 0},
+    {0, 0, 1,5,4,2},
+    {0, INF, 0, INF, INF, INF},
+    {0, INF, INF, 0, 1, INF},
+    {0, INF, 2, INF, 0, INF},
     {0, INF, INF, INF, 1, 0}};
-
 void dijkstra()
 {
     int vnear;
@@ -45,7 +51,7 @@ void dijkstra()
         {
             if (length[vnear] + W[vnear][i] < length[i])
             {
-                length[i] = length[vnear] + W[vnear][i]; //여기서 잘못 됨
+                length[i] = length[vnear] + W[vnear][i];
                 touch[i] = vnear;
                 cout << "length[" << i << "]=" << length[i] << " touch[" << i << "]=" << vnear << endl;
             }
