@@ -9,3 +9,4 @@
 3. Optimal Binary Search Trees
 4. Dijkstra's Algorithm
 5. Kruskal's Algorithm
+6. The 0-1 Knapsack Problem - 마지막 과제
