@@ -49,7 +49,7 @@ void initial (int n) {
     for (i=1; i<=n; i++)
         makeset(i);   }
 */
-// 2. 1번 과정을 위해서, 부모를 찾는 find함수
+// 부모를 찾는 find 함수
 int find(vector<int> &parent, int x) // 노드 x의 부모를 찾는 함수
 {
     if (parent[x] == x)
@@ -57,7 +57,7 @@ int find(vector<int> &parent, int x) // 노드 x의 부모를 찾는 함수
     return parent[x] = find(parent, parent[x]);
 }
 
-// 3. 서로 다른 부모일 경우, 두 개의 노드를 연결해주는 union 함수
+// 서로 다른 부모일 경우, 두 개의 노드를 연결해주는 함수
 void merge(vector<int> &parent, int x, int y) // 노드 x와 y를 합쳐주는 함수
 {
     x = find(parent, x);
@@ -67,7 +67,7 @@ void merge(vector<int> &parent, int x, int y) // 노드 x와 y를 합쳐주는 함수
     else
         parent[x] = y;
 }
-// 1. 서로 같은 부모를 갖는지 판단해주는 함수
+// 서로 같은 부모를 갖는지 판단해주는 함수
 bool equal(vector<int> &parent, int x, int y) // 노드 x와 y가 서로 같은 부모를 갖는지 아닌지 판단해주는 함수
 {
     x = find(Parent, x); // 노드 x의 부모 찾기
@@ -91,7 +91,7 @@ int main()
         Parent[i] = i;
 
     // 1. 간선의 크기만큼 그래프를 생성
-    // F.resize(e);
+     F.resize(e);
 
     // 2.[거리 ,[시작노드, 끝노드]] 순으로 그래프에 넣어주기
     for (int i = 0; i < e; i++)
