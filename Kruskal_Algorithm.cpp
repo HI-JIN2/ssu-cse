@@ -30,27 +30,32 @@ void initial(nodetype* U, int n){
 }
 
 // 부모를 찾는 find 함수
-int find(nodetype* U, int x)
+int find(nodetype* U, int i)
 {
-    if (U[x].parent == x)
-        return x;
-    return U[x].parent = find(U, U[x].parent);
+    int j;    
+    j = i;
+    while (U[j].parent != j) 
+        j=U[j].parent;    
+    
+    return j;
 }
 
 // 서로 다른 부모일 경우, 두 개의 노드를 연결해주는 함수
-void merge(nodetype* U, int x, int y) // 노드 x와 y를 합쳐주는 함수
+void merge(nodetype* U, int p, int q) // 노드 x와 y를 합쳐주는 함수
 {   
-    x = find(U, x);
-    y = find(U, y);
-    if (x < y)
-        U[y].parent = x;
-    else
-        U[x].parent = y;
+    if (U[p].depth == U[q].depth) { 
+        U[p].depth =+1; 
+        U[q].parent =p;        
+        }
+    else if (U[p].depth < U[q].depth) 
+        U[p].parent =q; 
+    else U[q].parent = p;
 }
 
 // 서로 같은 부모를 갖는지 판단해주는 함수
 bool equal(nodetype* U, int x, int y) // 노드 x와 y가 서로 같은 부모를 갖는지 아닌지 판단해주는 함수
 {
+    
     x = find(U, x); // 노드 x의 부모 찾기
     y = find(U, y); // 노드 y의 부모 찾기
 
@@ -85,8 +90,9 @@ int kruskal(int v, int e, vector<pair<int, pair<int, int>>> E,vector<pair<int, p
     //간선값이 가장 작은 녀석부터 이어간다
     for (int i = 0; i < e; i++)
     {
+
         //시작노드와 끝노드가 이미 합집합이라면, 이미 이어진거니까 최소비용이 아니다 넘겨버리자.
-        if (!equal(U, E[i].second.first, E[i].second.second))
+        if (!equal(U,E[i].second.first,E[i].second.second))
         {
             // 시작 노드와 끝노드를 합집합하자.
             merge(U, E[i].second.first, E[i].second.second);
