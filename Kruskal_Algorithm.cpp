@@ -7,6 +7,7 @@ using namespace std;
 vector<pair<int, pair<int, int>>> E;
 vector<pair<int, pair<int, int>>> F;
 
+/*정점1 정점2 가중치*/
 /* 교재 데이터
 1 2 1
 1 3 3
@@ -15,6 +16,17 @@ vector<pair<int, pair<int, int>>> F;
 3 4 4
 3 5 2
 4 5 5
+*/
+
+/*정점1 정점2 가중치*/
+/*자작 데이터
+1 2 5
+1 3 4
+2 3 1
+2 4 3
+4 5 3
+3 5 3
+3 4 2
 */
 
 typedef struct{
