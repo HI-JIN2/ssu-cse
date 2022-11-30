@@ -3,7 +3,7 @@
 #include <vector>
 using namespace std;
 
-vector<int> U;
+//vector<int> U;
 vector<pair<int, pair<int, int>>> E;
 vector<pair<int, pair<int, int>>> F;
 
@@ -17,40 +17,39 @@ vector<pair<int, pair<int, int>>> F;
 4 5 5
 */
 
-// typedef struct{
-//     int parent;
-//     int depth;
-// }nodetype;
+typedef struct{
+    int parent;
+    int depth;
+}nodetype;
 
-
-// void initial(nodetype* U, int n){
-//     for(int i = 1; i <= n; i++){
-//         U[i].parent = i;
-//         U[i].depth = 0;
-//     }
-// }
+void initial(nodetype* U, int n){
+    for(int i = 1; i <= n; i++){
+        U[i].parent = i;
+        U[i].depth = 0;
+    }
+}
 
 // 부모를 찾는 find 함수
-int find(vector<int> &U, int x) // 노드 x의 부모를 찾는 함수
+int find(nodetype* U, int x)
 {
-    if (U[x] == x)
+    if (U[x].parent == x)
         return x;
-    return U[x] = find(U, U[x]);
+    return U[x].parent = find(U, U[x].parent);
 }
 
 // 서로 다른 부모일 경우, 두 개의 노드를 연결해주는 함수
-void merge(vector<int> &U, int x, int y) // 노드 x와 y를 합쳐주는 함수
-{
+void merge(nodetype* U, int x, int y) // 노드 x와 y를 합쳐주는 함수
+{   
     x = find(U, x);
     y = find(U, y);
     if (x < y)
-        U[y] = x;
+        U[y].parent = x;
     else
-        U[x] = y;
+        U[x].parent = y;
 }
 
 // 서로 같은 부모를 갖는지 판단해주는 함수
-bool equal(vector<int> &U, int x, int y) // 노드 x와 y가 서로 같은 부모를 갖는지 아닌지 판단해주는 함수
+bool equal(nodetype* U, int x, int y) // 노드 x와 y가 서로 같은 부모를 갖는지 아닌지 판단해주는 함수
 {
     x = find(U, x); // 노드 x의 부모 찾기
     y = find(U, y); // 노드 y의 부모 찾기
@@ -61,15 +60,10 @@ bool equal(vector<int> &U, int x, int y) // 노드 x와 y가 서로 같은 부�
         return false; // 두 부모가 서로 다른 부모라면, false를 반환
 }
 
-
 int kruskal(int v, int e, vector<pair<int, pair<int, int>>> E,vector<pair<int, pair<int, int>>>& F)
 {
-    //부모배열의 크기 resize
-    U.resize(v + 1);
-    // 부모 배열 초기화
-    for (int i = 1; i <= v; i++)
-        U[i] = i;
-
+    nodetype U[v + 1];
+    initial(U, v);
     //initial
     //[거리 ,[시작노드, 끝노드]] 순으로 그래프에 넣어주기
     for (int i = 0; i < e; i++)
@@ -108,6 +102,7 @@ int kruskal(int v, int e, vector<pair<int, pair<int, int>>> E,vector<pair<int, p
     cout << "-----F-----" << endl;
     for (int i = 0; i < v-1; i++)
         cout << F[i].first << " " << F[i].second.first << " " << F[i].second.second << endl;
+    
     return sum;
 }
 
