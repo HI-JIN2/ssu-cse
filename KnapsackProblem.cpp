@@ -61,7 +61,7 @@ int main()
 
     knapsack(0, 0, 0);
 
-    for (int i = 1; i <= n; i++)
+    for (int i = 1; i <= numbest; i++)
     {
         cout << bestset[i];
     }
