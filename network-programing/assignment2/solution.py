@@ -1,29 +1,7 @@
-"""
-과제2-1
-
-1. tls/ssl
-2. 서버는 여러 클라이언트 동시에 처리 멀티플. 비동기 처리
-3. 로깅<- 연결, 연결 끊김, 오류
-4. 적절한 종료 처리
-5. compression 압축 메커니즘. zlib
-6. 네트워크 오류 처리 (연결, 소켓, 시간 초과, 유효하지 않은 클라이언트 요청 )
-"""
-
-# 클라이언트 :
-# 1. 쿼리스트링 {‘task’: ‘ping’, ‘domain’: ‘google.com’}
-# 2. 압축. 
-# 3. 암호화, 그리고 그것을 서버한테 전송하기
-
-# 서버 : 
-# 1. 복호화. 받은 암호화된 데이터
-# 2 .복호화된 데이터를 압축 해제
-# 3. 제이슨 형식으로 읽기, 일 요청, 클라로 부터 리턴 응답받기. 제이슨으로
+import socket, ssl, json, zlib, logging, argparse, threading
 
 
-import argparse, json, logging, socket, ssl, threading, zlib
-
-
-def toggle_string1(S):
+def toggle_string(S):
     s = ""
     # Write your code between start and end for solution of problem 2
     # Start
@@ -47,94 +25,130 @@ def toggle_string1(S):
 
     return s
 
-def ping(domain_name):
-    #conver between ipv4 hostnames and ip addressed.
-    ip_address=socket.gethostbyname(domain_name)
-    
-    return ip_address
-
-
-def handle_client(ssl_sock):
-    try:
-        while True:
-            # receive the message from client
-            recv_query = ssl_sock.recv(1024)
-            if not recv_query:
-                break
-            print("received message:", recv_query)
-
-            # decompress
-            compressed_data = zlib.decompress(recv_query)
-            print("decompress:", compressed_data)
-
-            # read to json
-            json_data = json.loads(compressed_data.decode('utf-8'))
-
-            if json_data['task']=='ping':
-                ip_address=socket.gethostbyname(json_data['domain'])
-                print(json_data['domain'],f' convert tp ip address : {ip_address}')
-
-    except Exception as e:
-        logging.error('Error in handling client: %s', e)
-    finally:
-        logging.info('Closing connection with client')
-        ssl_sock.close()
-
-
 def client(host, port, cafile=None):
+    """
+    The client function that connects to the server and sends queries securely.
+    """
     purpose = ssl.Purpose.SERVER_AUTH
     context = ssl.create_default_context(purpose, cafile=cafile)
 
-    ssl_sock = context.wrap_socket(socket.socket(socket.AF_INET, socket.SOCK_STREAM), server_hostname=host)
-    ssl_sock.connect((host, port))
-    logging.info('Connected to host {!r} and port {}'.format(host, port))
-
-    # make query
-    query = {'task': 'ping', 'domain': 'google.com'}
-
-    # query to json
-    json_query = json.dumps(query)
-
-    # compressed
-    compressed_query = zlib.compress(json_query.encode('utf-8'))
-
-    # send to server
-    ssl_sock.sendall(compressed_query)
-
+    raw_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    raw_sock.connect((host, port))
+    print('Connected to host {!r} and port {}'.format(host, port))
+    ssl_sock = context.wrap_socket(raw_sock, server_hostname=host)
+    logging.info(f'Connected to {host}:{port} securely')
+    
+    has_printed = False
 
     while True:
-        data = ssl_sock.recv(1024)
-        if not data:  # EOF
-            logging.warning('end of file!')  # will print a message to the console
+        task = input("Enter task name: ")
+        if task == 'toggle_string':
+            string = input("Enter a string to toggle: ")
+            query = {'task': 'toggle_string', 'string': string}
+            query_json = json.dumps(query).encode('utf-8')
+            compressed = zlib.compress(query_json)
+            ssl_sock.sendall(compressed)
+
+            response = ssl_sock.recv(1024)
+            decompressed = zlib.decompress(response)
+            response_json = json.loads(decompressed.decode('utf-8'))
+
+
+            if not has_printed:
+                toggle_result = response_json["result"]
+                print("result:", toggle_result)
+                has_printed = True
+                ssl_sock.close()
+                break
+
+            if not response:
+                break
+
+        else:
+            query = {'task': 'ping', 'domain': 'google.com'}
+            query_json = json.dumps(query).encode('utf-8')
+            compressed = zlib.compress(query_json)
+            ssl_sock.sendall(compressed)
+
+            response = ssl_sock.recv(1024)
+            decompressed = zlib.decompress(response)
+            response_json = json.loads(decompressed.decode('utf-8'))
+
+
+            if not has_printed:
+                ip_address = response_json["ip"]
+                print("ip address:", ip_address)
+                has_printed = True
+                ssl_sock.close()
+                break
+
+            if not response:
+                break
+            logging.info(f'Response from {host}:{port}: {response}')
+    logging.info(f'Disconnected from {host}:{port}')
+
+
+def handle_client(conn, addr):
+    """
+    A function that handles the client's request on the server.
+    """
+    context = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
+    context.load_cert_chain(certfile='localhost.pem')
+    ssock = context.wrap_socket(conn, server_side=True)
+    logging.info(f'Connected to {addr[0]}:{addr[1]} securely')
+    while True:
+        data = ssock.recv(1024)
+
+        if not data:
             break
-        print(repr(data))
+        decompressed = zlib.decompress(data)
+        query = json.loads(decompressed.decode('utf-8'))
+
+        if query['task'] == 'ping':
+            # Perform the task here
+            domain = query['domain']
+            ip_address = socket.gethostbyname(domain)
+            ip_query =  {'domain': query['domain'], 'ip': ip_address}
+            ip_address_json = json.dumps(ip_query).encode('utf-8')
+            compressed = zlib.compress(ip_address_json)
+            ssock.sendall(compressed)
+        
+        elif query['task'] == 'toggle_string':
+            # Perform the 'toggle_string' task here
+            string = query['string']
+            toggled = toggle_string(string)
+            result_query = {'task': 'toggle_string', 'result': toggled}
+            result_json = json.dumps(result_query).encode('utf-8')
+            compressed = zlib.compress(result_json)
+            ssock.sendall(compressed)
+
+
+    logging.info(f'Disconnected from {addr[0]}:{addr[1]}')
+    ssock.close()
+
 
 
 def server(host, port, certfile, cafile=None):
     purpose = ssl.Purpose.CLIENT_AUTH
-    context = ssl.create_default_context(purpose, cafile=cafile)
+
+    """
+    The server function that listens to incoming client connections.
+    """
+    context = ssl.create_default_context(purpose.CLIENT_AUTH)
+    #context.load_verify_locations(cafile='ca.pem')
     context.load_cert_chain(certfile)
+
 
     listener = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     listener.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     listener.bind((host, port))
     listener.listen(1)
-    logging.info('Listening at interface {!r} and port {}'.format(host, port))
+    logging.info(f'Server listening on {host}:{port}')
+    while True:
+        conn, addr = listener.accept()
+        threading.Thread(target=handle_client, args=(conn, addr)).start()
 
-    try:
-        while True:
-            client_sock, address = listener.accept()
-            logging.info('Accepted connection from %s:%s', *address)
-            ssl_sock = context.wrap_socket(client_sock, server_side=True)
 
-            # spawn a new thread to handle the client
-            t = threading.Thread(target=handle_client, args=(ssl_sock,))
-            t.start()
-    except KeyboardInterrupt:
-        logging.warning('Server interrupted by user')
-    finally:
-        logging.info('Closing server socket')
-        listener.close()
 
 
 if __name__ == '__main__':
