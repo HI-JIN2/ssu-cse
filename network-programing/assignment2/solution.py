@@ -47,6 +47,13 @@ def toggle_string1(S):
 
     return s
 
+def ping(domain_name):
+    #conver between ipv4 hostnames and ip addressed.
+    ip_address=socket.gethostbyname(domain_name)
+    
+    return ip_address
+
+
 def handle_client(ssl_sock):
     try:
         while True:
@@ -54,13 +61,18 @@ def handle_client(ssl_sock):
             recv_query = ssl_sock.recv(1024)
             if not recv_query:
                 break
-            print("received message:", recv_query.decode())
+            print("received message:", recv_query)
 
             # decompress
             compressed_data = zlib.decompress(recv_query)
+            print("decompress:", compressed_data)
 
             # read to json
-            json_data = json.loads(compressed_data)
+            json_data = json.loads(compressed_data.decode('utf-8'))
+
+            if json_data['task']=='ping':
+                ip_address=socket.gethostbyname(json_data['domain'])
+                print(json_data['domain'],f' convert tp ip address : {ip_address}')
 
     except Exception as e:
         logging.error('Error in handling client: %s', e)
