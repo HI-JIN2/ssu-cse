@@ -23,6 +23,30 @@
 import argparse, json, logging, socket, ssl, threading, zlib
 
 
+def toggle_string1(S):
+    s = ""
+    # Write your code between start and end for solution of problem 2
+    # Start
+    # dictionary to match lowercase to uppercase
+    lower2Upper = {"a": "A", "b": "B", "c": "C", "d": "D", "e": "E", "f": "F", "g": "G",
+                    "h": "H", "i": "I", "j": "J", "k": "K", "l": "L", "m": "M", "n": "N",
+                    "o": "O", "p": "P", "q": "Q", "r": "R", "s": "S", "t": "T", "u": "U",
+                    "v": "V", "w": "W", "x": "X", "y": "Y", "z": "Z"}
+    # dictionary to match uppercase to lowercase
+    upper2Lower = {"A": "a", "B": "b", "C": "c", "D": "d", "E": "e", "F": "f", "G": "g",
+                    "H": "h", "I": "i", "J": "j", "K": "k", "L": "l", "M": "m", "N": "n",
+                    "O": "o", "P": "p", "Q": "q", "R": "r", "S": "s", "T": "t", "U": "u",
+                    "V": "v", "W": "w", "X": "x", "Y": "y", "Z": "z"}
+    for c in S:
+        if 'a' <= c <= 'z':  # lower case -> upper case
+            s += lower2Upper[c]
+        elif 'A' <= c <= 'Z':  # upper case -> lower case
+            s += upper2Lower[c]
+        else:
+            s += c
+
+    return s
+
 def handle_client(ssl_sock):
     try:
         while True:
