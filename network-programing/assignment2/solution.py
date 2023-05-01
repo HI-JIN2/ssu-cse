@@ -9,7 +9,8 @@
 6. 네트워크 오류 처리 (연결, 소켓, 시간 초과, 유효하지 않은 클라이언트 요청 )
 """
 
-# 클라이언트 :1. 쿼리스트링 {‘task’: ‘ping’, ‘domain’: ‘google.com’}
+# 클라이언트 :
+# 1. 쿼리스트링 {‘task’: ‘ping’, ‘domain’: ‘google.com’}
 # 2. 압축. 
 # 3. 암호화, 그리고 그것을 서버한테 전송하기
 
@@ -18,7 +19,29 @@
 # 2 .복호화된 데이터를 압축 해제
 # 3. 제이슨 형식으로 읽기, 일 요청, 클라로 부터 리턴 응답받기. 제이슨으로
 
-import argparse, socket, ssl, logging, zlib, json
+import argparse, socket, ssl, logging, zlib, json, threading
+
+
+def handle_client(client_sock):
+    try:
+        while True:
+            # receive the message from client
+            recv_query = client_sock.recv(1024) 
+            if not recv_query:
+                break
+            print("received message:", recv_query.decode())
+
+            # decompress
+            compressed_data=zlib.decompress(recv_query)
+            
+            # read to json
+            json_data=json.loads(compressed_data)
+
+    except Exception as e:
+        logging.error('Error in handling client: %s', e)
+    finally:
+        logging.info('Closing connection with client')
+        client_sock.close()
 
 def client(host, port, cafile=None):
     purpose = ssl.Purpose.SERVER_AUTH
@@ -26,23 +49,20 @@ def client(host, port, cafile=None):
 
     raw_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     raw_sock.connect((host, port))
-    print('Connected to host {!r} and port {}'.format(host, port))
+    logging.info('Connected to host {!r} and port {}'.format(host, port))
     ssl_sock = context.wrap_socket(raw_sock, server_hostname=host)
     
-    query = json.dumps({'task': 'ping', 'domain': 'google.com'} )
-    #{'task': 'ping', 'domain': 'google.com'} #쿼리
+    #make query
+    query = {'task': 'ping', 'domain': 'google.com'} 
+    
+    #query to json
+    json_query = json.dumps(query)
+    
+    #compressed
+    compressed_query=zlib.compress(json_query.encode('utf-8'))
 
-
-    #쿼리 압축 
-    compressed_query=zlib.compress(query)
-
-    #쿼리 암호화 어캐하지??
-
-
-
-    #전송
-    raw_sock.sendto(compressed_query.encode(), (host, port))
-
+    #send to server
+    raw_sock.sendall(compressed_query, (host, port))
 
 
     while True:
@@ -62,32 +82,33 @@ def server(host, port, certfile, cafile=None):
     listener.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     listener.bind((host, port))
     listener.listen(1) 
-    print('Listening at interface {!r} and port {}'.format(host, port))
-    raw_sock, address = listener.accept()
-    print('Connection from host {!r} and port {}'.format(*address))
-    ssl_sock = context.wrap_socket(raw_sock, server_side=True)
+    logging.info('Listening at interface {!r} and port {}'.format(host, port))
 
-    
+
+    try:
+        while True:
+            client_sock, address = listener.accept()
+            logging.info('Accepted connection from %s:%s', *address)
+            ssl_sock = context.wrap_socket(client_sock, server_side=True)
+
+            # spawn a new thread to handle the client
+            t = threading.Thread(target=handle_client, args=(ssl_sock,))
+            t.start()
+    except KeyboardInterrupt:
+        logging.warning('Server interrupted by user')
+    finally:
+        logging.info('Closing server socket')
+        listener.close()
+
     while True:
-        recv_query, addr = ssl_sock.recvfrom(1024)  # receive the message from the client
-        print("received message:", recv_query.decode())
-        zlib.decompress(recv_query)
+        # accept a new client connection
+        raw_sock, address = listener.accept()
+        print('Connection from host {!r} and port {}'.format(*address))
+        ssl_sock = context.wrap_socket(raw_sock, server_side=True)
 
-        json.loads(recv_query)
-        
-        #encrypted_data = encrypt_message(data.decode())  # encrypt the message using the custom algorithm
-        #ssl_sock.sendto(encrypted_data.encode(), addr)  # send the encrypted message back to the client
-        ssl_sock.close
-
-
+        # handle the client request in a new thread
+        threading.Thread(target=handle_client, args=(ssl_sock,)).start()
     
-
-    #받야야함
-    #받고 압축 해제, 복호화
-
-
-    ssl_sock.sendall('Simple is better than complex.'.encode('ascii'))
-    ssl_sock.close()
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Safe TLS client and server')
