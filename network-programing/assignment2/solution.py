@@ -19,71 +19,71 @@
 # 2 .복호화된 데이터를 압축 해제
 # 3. 제이슨 형식으로 읽기, 일 요청, 클라로 부터 리턴 응답받기. 제이슨으로
 
-import argparse, socket, ssl, logging, zlib, json, threading
+
+import argparse, json, logging, socket, ssl, threading, zlib
 
 
-def handle_client(client_sock):
+def handle_client(ssl_sock):
     try:
         while True:
             # receive the message from client
-            recv_query = client_sock.recv(1024) 
+            recv_query = ssl_sock.recv(1024)
             if not recv_query:
                 break
             print("received message:", recv_query.decode())
 
             # decompress
-            compressed_data=zlib.decompress(recv_query)
-            
+            compressed_data = zlib.decompress(recv_query)
+
             # read to json
-            json_data=json.loads(compressed_data)
+            json_data = json.loads(compressed_data)
 
     except Exception as e:
         logging.error('Error in handling client: %s', e)
     finally:
         logging.info('Closing connection with client')
-        client_sock.close()
+        ssl_sock.close()
+
 
 def client(host, port, cafile=None):
     purpose = ssl.Purpose.SERVER_AUTH
     context = ssl.create_default_context(purpose, cafile=cafile)
 
-    raw_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    raw_sock.connect((host, port))
+    ssl_sock = context.wrap_socket(socket.socket(socket.AF_INET, socket.SOCK_STREAM), server_hostname=host)
+    ssl_sock.connect((host, port))
     logging.info('Connected to host {!r} and port {}'.format(host, port))
-    ssl_sock = context.wrap_socket(raw_sock, server_hostname=host)
-    
-    #make query
-    query = {'task': 'ping', 'domain': 'google.com'} 
-    
-    #query to json
-    json_query = json.dumps(query)
-    
-    #compressed
-    compressed_query=zlib.compress(json_query.encode('utf-8'))
 
-    #send to server
-    raw_sock.sendall(compressed_query, (host, port))
+    # make query
+    query = {'task': 'ping', 'domain': 'google.com'}
+
+    # query to json
+    json_query = json.dumps(query)
+
+    # compressed
+    compressed_query = zlib.compress(json_query.encode('utf-8'))
+
+    # send to server
+    ssl_sock.sendall(compressed_query)
 
 
     while True:
         data = ssl_sock.recv(1024)
-        if not data: #EOF 
+        if not data:  # EOF
             logging.warning('end of file!')  # will print a message to the console
             break
         print(repr(data))
-    
+
 
 def server(host, port, certfile, cafile=None):
-    purpose = ssl.Purpose.CLIENT_AUTH 
+    purpose = ssl.Purpose.CLIENT_AUTH
     context = ssl.create_default_context(purpose, cafile=cafile)
     context.load_cert_chain(certfile)
 
     listener = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     listener.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     listener.bind((host, port))
-    listener.listen(1) 
+    listener.listen(1)
     logging.info('Listening at interface {!r} and port {}'.format(host, port))
-
 
     try:
         while True:
@@ -100,15 +100,6 @@ def server(host, port, certfile, cafile=None):
         logging.info('Closing server socket')
         listener.close()
 
-    while True:
-        # accept a new client connection
-        raw_sock, address = listener.accept()
-        print('Connection from host {!r} and port {}'.format(*address))
-        ssl_sock = context.wrap_socket(raw_sock, server_side=True)
-
-        # handle the client request in a new thread
-        threading.Thread(target=handle_client, args=(ssl_sock,)).start()
-    
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Safe TLS client and server')
