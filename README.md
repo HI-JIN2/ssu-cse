@@ -9,18 +9,16 @@
 - 객체지향프로그래밍
 - 
 #### 2022-2학기
-- [사용자인터페이스및실습](https://github.com/HI-JIN2/ssu-cse-UI)
+- [사용자인터페이스및실습](https://github.com/HI-JIN2/ssu-cse/tree/main/UI)
   - 팀 프로젝트 [EAT-SSU](https://github.com/EAT-SSU/EAT-SSU)
-- [알고리즘](https://github.com/HI-JIN2/ssu-cse-algorithm)
+- [알고리즘](https://github.com/HI-JIN2/ssu-cse/tree/main/algorithm)
 - 웹프로그래밍및실습
 - 데이터분석및실습
-- 컴퓨터구조
-- 컴퓨터네트워크
+
 
 ### 3학년
 #### 2023-1학기
 - 프로그래밍언어
-- 네트워크프로그래밍
+- [네트워크프로그래밍](https://github.com/HI-JIN2/ssu-cse/tree/main/network-programing)
 - 지능형시스템
 - 파일처리
-- 소프트웨어공학
