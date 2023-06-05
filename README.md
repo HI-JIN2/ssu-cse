@@ -20,4 +20,4 @@
 #### 2023-1학기
 - [프로그래밍언어](https://github.com/HI-JIN2/ssu-cse/tree/main/programming-language)
 - [네트워크프로그래밍](https://github.com/HI-JIN2/ssu-cse/tree/main/network-programing)
-- 지능형시스템
+- [지능형시스템](https://github.com/HI-JIN2/ssu-cse/tree/main/intelligent-system)
