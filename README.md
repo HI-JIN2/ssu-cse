@@ -22,3 +22,6 @@
 - [프로그래밍언어](https://github.com/HI-JIN2/ssu-cse/tree/main/programming-language)
 - [네트워크프로그래밍](https://github.com/HI-JIN2/ssu-cse/tree/main/network-programing)
 - [지능형시스템](https://github.com/HI-JIN2/ssu-cse/tree/main/intelligent-system)
+
+#### 2023-2학기
+- [컴퓨터비전](https://github.com/HI-JIN2/ssu-cse/tree/main/computer-vision)
