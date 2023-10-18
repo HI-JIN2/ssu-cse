@@ -24,4 +24,4 @@
 - [지능형시스템](https://github.com/HI-JIN2/ssu-cse/tree/main/intelligent-system)
 
 #### 2023-2학기
-- [컴퓨터비전](https://github.com/HI-JIN2/ssu-cse/tree/main/computer-vision)
+- [컴퓨터비전](https://github.com/HI-JIN2/ssu-cse/tree/main/computer-vision)
