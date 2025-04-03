@@ -25,3 +25,8 @@
 
 #### 2023-2학기
 - [컴퓨터비전](https://github.com/HI-JIN2/ssu-cse/tree/main/computer-vision)
+- [전공종합설계2](https://github.com/COOING-team/COOING-Server)
+
+### 4학년
+#### 2025-1학기
+- [전공종합설계1](https://github.com/saegil-project/Saegil-Android)
